@@ -1,0 +1,239 @@
+html, body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Game container - FULL HEIGHT ON DESKTOP, 75% ON MOBILE */
+#game-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Full height on desktop */
+    background-color: black;
+}
+
+/* Canvas styling */
+canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Controls container takes lower 25% - HIDDEN ON DESKTOP */
+#controls-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 25vh; /* <-- ADJUSTED FOR 75/25 SPLIT */
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    display: none; /* Hidden by default on desktop */
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* WASD Control Grid */
+#wasd-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 10px;
+    width: 250px;
+    height: 100%; /* Fill the 25vh container */
+    max-width: 80vw;
+    max-height: 20vh; /* Adjust max height to fit */
+}
+
+/* Control buttons */
+.control-btn {
+    border: 2px solid #00d4ff;
+    background: linear-gradient(145deg, #1e3c72, #2a5298);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
+    user-select: none;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.control-btn:active {
+    background: linear-gradient(145deg, #00d4ff, #0099cc);
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 212, 255, 0.5);
+}
+
+.control-btn:hover {
+    border-color: #00ffff;
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+}
+
+/* Position WASD buttons */
+#btn-w { grid-column: 2; grid-row: 1; }
+#btn-a { grid-column: 1; grid-row: 2; }
+#btn-s { grid-column: 2; grid-row: 2; }
+#btn-d { grid-column: 3; grid-row: 2; }
+
+/* HUD Elements */
+#lives {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+    display: flex;
+    gap: 5px;
+}
+
+.life {
+    width: 25px;
+    height: 25px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="yellow"/><path d="M20 35 Q50 5 80 35 Q65 50 50 65 Q35 50 20 35" fill="yellow"/></svg>' ) no-repeat center;
+    background-size: contain;
+}
+
+#score {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00d4ff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #00d4ff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+}
+
+#help-button {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+    z-index: 100;
+    border: 2px solid #00d4ff;
+    color: white;
+    background: linear-gradient(145deg, #1e3c72, #2a5298);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(0, 212, 255, 0.3);
+}
+
+#help-button:hover {
+    background: linear-gradient(145deg, #2a5298, #1e3c72);
+    border-color: #00ffff;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+}
+
+.dialog {
+    color: rgb(255, 255, 200);
+    background: linear-gradient(145deg, rgba(0, 0, 30, 0.95), rgba(20, 20, 60, 0.95));
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 400px;
+    z-index: 1000;
+    padding: 2em;
+    border-radius: 15px;
+    border: 2px solid #00d4ff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    cursor: auto;
+    display: none;
+}
+
+.dialog h2 {
+    color: #00d4ff;
+    margin-top: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.dialog button {
+    background: linear-gradient(145deg, #1e3c72, #2a5298);
+    border: 2px solid #00d4ff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+}
+
+.dialog button:hover {
+    background: linear-gradient(145deg, #00d4ff, #0099cc);
+    border-color: #00ffff;
+}
+
+/* Mobile devices - show touch controls and adjust layout */
+@media (max-width: 768px), (pointer: coarse) {
+    /* Show touch controls on mobile */
+    #controls-container {
+        display: flex !important;
+    }
+    
+    /* Game takes upper 75% on mobile */
+    #game-container {
+        height: 75vh !important; /* <-- ADJUSTED FOR 75/25 SPLIT */
+    }
+    
+    #wasd-controls {
+        width: 220px;
+        height: 100%;
+    }
+    
+    .control-btn {
+        font-size: 22px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    #wasd-controls {
+        width: 200px;
+        height: 100%;
+    }
+    
+    .control-btn {
+        font-size: 20px;
+    }
+    
+    #score {
+        font-size: 16px;
+        padding: 6px 12px;
+    }
+    
+    .life {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Desktop - ensure touch controls are hidden */
+@media (min-width: 769px) and (pointer: fine) {
+    #controls-container {
+        display: none !important;
+    }
+    
+    #game-container {
+        height: 100vh !important;
+    }
+}
