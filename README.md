@@ -127,16 +127,80 @@ npm run build
 npm start
 ```
 
-## 🐛 Troubleshooting
+# ⚙️ How It Works
+The game's logic is broken down into several key flows, from starting the game to the AI that drives the ghosts.
+## 1. Game Start Flow
+The game initializes when the player lands on the page and decides to start.
+```mermaid
+graph LR
+A[Player Visits Page] --> B[Presses 'Start Game' Button]
+B --> C[Game Board is Rendered]
+C --> D[Pacman & Ghosts Placed]
+D --> E[Game Loop Begins]
+```
 
-### Black Screen Issues
-- Ensure all JavaScript files are in `/public/js/`
-- Check browser console for script loading errors
-- Verify Three.js compatibility with your browser
+## 2. Player Movement
+Player movement is handled by listening for keyboard events and checking for valid moves.
+```mermaid
+graph TD
+A[Player Presses Arrow Key] --> B{Is the next tile a wall?}
+B -->|No| C[Update Pacman's Position]
+B -->|Yes| D[Pacman Stops]
+C --> E[Check for Pellet or Power-Up]
+D --> F[Await Next Key Press]
+E --> F
 
-### Mobile Controls Not Showing
-- Check CSS media queries in `pacman.css`
-- Ensure viewport meta tag is properly set
+```
+
+## 3. Core Game Logic
+The game state is updated based on Pacman's interactions with pellets, power-ups, and ghosts.
+```mermaid
+graph LR
+A[Pacman Moves to New Tile] --> B{Tile Contains Pellet?}
+B -->|Yes| C[Increase Score]
+B -->|No| D{Tile Contains Power-Up?}
+C --> E[Remove Pellet from Board]
+D -->|Yes| F[Activate 'Scared' Ghost Mode]
+D -->|No| G[Check for Ghost Collision]
+F --> E
+E --> G
+
+```
+
+## 4. Ghost AI Behavior
+Each ghost follows a simple AI pattern to chase the player, which changes when a power-up is active.
+```mermaid
+graph TD
+A[Game Loop Updates] --> B[Ghost Calculates Path to Pacman]
+B --> C{Is Ghost in 'Scared' Mode?}
+C -->|No| D[Move Towards Pacman]
+C -->|Yes| E[Move Away from Pacman]
+D --> F{Collision with Pacman?}
+E --> F
+F -->|Yes| G[End Game]
+F -->|No| H[Continue Chase]
+
+```
+
+## 🗄️ Local backend for scores (added)
+
+This project includes a simple file-based backend (Next.js App Router API routes) to store users and scores in `data/users.json`.
+
+- POST `/api/users` { username } -> creates/ensures a user exists
+- POST `/api/scores` { username, score } -> submits a score (updates highScore)
+- GET `/api/scores?username=NAME` -> fetch user and highScore
+
+The APIs are file-backed (stored in `data/users.json`) and intended for local development only. For production use, replace with a real database.
+
+### File vs Neon DB (or any hosted DB)
+
+- File (current approach): simple, zero-deploy, great for demos and very small traffic. Downsides: not safe for concurrent writes, not scalable, and not shared across multiple instances.
+- Neon / Postgres / Hosted DB: recommended for production. Provides concurrency, durability, and scaling. If you expect many concurrent players or want a persistent leaderboard across deployments, use a hosted DB.
+
+Estimated capacity: the file approach can handle a small number of users (hundreds to low thousands) only if traffic is light and you're running a single server instance. For anything larger or multi-instance deployments, migrate to a proper DB.
+
+
+📦 Getting Started Locally
 
 ## 🤝 Contributing
 
@@ -160,22 +224,3 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 **Enjoy playing Pac-Man 3D!** 🟡👻
-
-## 🗄️ Local backend for scores (added)
-
-This project includes a simple file-based backend (Next.js App Router API routes) to store users and scores in `data/users.json`.
-
-- POST `/api/users` { username } -> creates/ensures a user exists
-- POST `/api/scores` { username, score } -> submits a score (updates highScore)
-- GET `/api/scores?username=NAME` -> fetch user and highScore
-
-The APIs are file-backed (stored in `data/users.json`) and intended for local development only. For production use, replace with a real database.
-
-### File vs Neon DB (or any hosted DB)
-
-- File (current approach): simple, zero-deploy, great for demos and very small traffic. Downsides: not safe for concurrent writes, not scalable, and not shared across multiple instances.
-- Neon / Postgres / Hosted DB: recommended for production. Provides concurrency, durability, and scaling. If you expect many concurrent players or want a persistent leaderboard across deployments, use a hosted DB.
-
-Estimated capacity: the file approach can handle a small number of users (hundreds to low thousands) only if traffic is light and you're running a single server instance. For anything larger or multi-instance deployments, migrate to a proper DB.
-
-I added a `/leaderboard` page that lists players sorted by `highScore`. Use it to view top players locally.
