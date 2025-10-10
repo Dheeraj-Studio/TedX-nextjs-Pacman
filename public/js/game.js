@@ -191,6 +191,38 @@ function startGame() {
         return scene;
     };
 
+    // Helper to submit score to backend if user is logged in (localStorage)
+    var submitScore = function(score) {
+        try {
+            var username = localStorage.getItem('pacman_username');
+            console.log('submitScore called with:', { username: username, score: score });
+            if (!username) {
+                console.warn('No username found in localStorage');
+                return;
+            }
+            fetch('/api/scores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, score: score })
+            }).then(function(res){
+                console.log('Score submission response:', res.status);
+                // optionally update UI with new high score
+                if (res.ok) return res.json();
+                else throw new Error('Score submission failed: ' + res.status);
+            }).then(function(json){
+                console.log('Score submission result:', json);
+                if (json && json.user && json.user.highScore !== undefined) {
+                    // update high score in page if present
+                    var info = document.querySelector('#score');
+                    // do not overwrite current score display; instead add title attr
+                    if (info) info.title = 'High: ' + json.user.highScore;
+                }
+            }).catch(function(e){ console.warn('submitScore error', e); });
+        } catch (e) { 
+            console.error('submitScore exception:', e);
+        }
+    };
+
     var createHudCamera = function (map) {
         var halfWidth = (map.right - map.left) / 2, halfHeight = (map.top - map.bottom) / 2;
 
@@ -472,14 +504,7 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
 
         var remove = [];
 
-        // Create life images
-        var lives = 3;
-        var livesContainer = document.getElementById('lives');
-        for (var i = 0; i < lives; i++) {
-            var life = document.createElement('div');
-            life.className = 'life';
-            livesContainer.appendChild(life);
-        }
+        // No lives system - game over on first hit
 
         // Handle window resize
         window.addEventListener('resize', function() {
@@ -542,6 +567,18 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
             text.up.copy(pacman.direction);
             text.lookAt(text.position.clone().add(UP));
 
+            // Compute bounding sphere now to avoid three.js frustum checks reading
+            // an undefined boundingSphere later during render.
+            try {
+                if (text.geometry && typeof text.geometry.computeBoundingSphere === 'function') {
+                    text.geometry.computeBoundingSphere();
+                }
+                // For temporary text, skip frustum culling to be extra safe.
+                text.frustumCulled = false;
+            } catch (e) {
+                // ignore
+            }
+
             // Remove after 3 seconds.
             text.isTemporary = true;
             text.removeAfter = now + 3;
@@ -572,6 +609,8 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
                 var text = showText('You won =D', 1, now);
 
                 levelStartSound.play();
+                // submit score on win
+                submitScore(score);
             }
 
             // Go to next level 4 seconds after winning.
@@ -598,12 +637,26 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
                 numGhosts = 0;
             }
 
-            // Reset pacman 4 seconds after dying.
-            if (lives > 0 && lost && now - lostTime > 4) {
+            // Reset game 4 seconds after game over
+            if (lost && now - lostTime > 4) {
+                // Reset everything for new game
                 lost = false;
                 pacman.position.copy(map.pacmanSpawn);
                 pacman.direction.copy(LEFT);
                 pacman.distanceMoved = 0;
+                
+                // Reset dots, power pellets, and ghosts
+                scene.children.forEach(function (object) {
+                    if (object.isDot === true || object.isPowerPellet === true)
+                        object.visible = true;
+                    if (object.isGhost === true)
+                        remove.push(object);
+                });
+                
+                // Reset game state
+                numDotsEaten = 0;
+                numGhosts = 0;
+                score = 0;
             }
 
             // Animate model
@@ -743,20 +796,20 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
                     killSound.play();
                     score += 200;
                 } else {
-                    lives -= 1;
-                    // Unshow life
-                    var lifeElements = document.getElementsByClassName('life');
-                    if (lifeElements[lives]) {
-                        lifeElements[lives].style.display = 'none';
-                    }
-
-                    if (lives > 0)
-                        showText('You died =(', 0.1, now);
-                    else
-                        showText('Game over =(', 0.1, now);
-
+                    // Game over immediately - submit score and reset
+                    showText('Game over! Score: ' + score, 0.2, now);
+                    
                     lost = true;
                     lostTime = now;
+
+                    // Submit current score to database
+                    submitScore(score);
+                    
+                    // Reset score for next game after a delay
+                    setTimeout(function() {
+                        score = 0;
+                        document.getElementById("score").innerText = "Score: " + score;
+                    }, 3000);
 
                     deathSound.play();
                 }
@@ -813,6 +866,22 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
             // Render main view
             var gameContainer = document.getElementById('game-container');
             renderer.setViewport(0, 0, gameContainer.clientWidth, gameContainer.clientHeight);
+
+            // Safety: ensure geometries have bounding spheres computed. Some geometries
+            // (for example dynamically created TextGeometry) may not have a boundingSphere
+            // yet which causes THREE.Frustum.intersectsObject to fail when reading it.
+            scene.traverse(function(obj) {
+                try {
+                    if (obj && obj.isMesh && obj.geometry && !obj.geometry.boundingSphere) {
+                        if (typeof obj.geometry.computeBoundingSphere === 'function') {
+                            obj.geometry.computeBoundingSphere();
+                        }
+                    }
+                } catch (e) {
+                    // ignore compute errors for safety
+                }
+            });
+
             renderer.render(scene, camera);
 
             // Render HUD (disabled for mobile - takes up too much space)
