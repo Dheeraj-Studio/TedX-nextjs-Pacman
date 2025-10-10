@@ -160,3 +160,22 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 **Enjoy playing Pac-Man 3D!** 🟡👻
+
+## 🗄️ Local backend for scores (added)
+
+This project includes a simple file-based backend (Next.js App Router API routes) to store users and scores in `data/users.json`.
+
+- POST `/api/users` { username } -> creates/ensures a user exists
+- POST `/api/scores` { username, score } -> submits a score (updates highScore)
+- GET `/api/scores?username=NAME` -> fetch user and highScore
+
+The APIs are file-backed (stored in `data/users.json`) and intended for local development only. For production use, replace with a real database.
+
+### File vs Neon DB (or any hosted DB)
+
+- File (current approach): simple, zero-deploy, great for demos and very small traffic. Downsides: not safe for concurrent writes, not scalable, and not shared across multiple instances.
+- Neon / Postgres / Hosted DB: recommended for production. Provides concurrency, durability, and scaling. If you expect many concurrent players or want a persistent leaderboard across deployments, use a hosted DB.
+
+Estimated capacity: the file approach can handle a small number of users (hundreds to low thousands) only if traffic is light and you're running a single server instance. For anything larger or multi-instance deployments, migrate to a proper DB.
+
+I added a `/leaderboard` page that lists players sorted by `highScore`. Use it to view top players locally.
