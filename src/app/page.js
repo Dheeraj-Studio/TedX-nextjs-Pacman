@@ -8,9 +8,10 @@ export default function PacmanGamePage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [highScore, setHighScore] = useState(0);
+  const [showHelp, setShowHelp] = useState(false); // 👈 for dialog toggle
 
   useEffect(() => {
-    // If not logged in, redirect to /login
+    // Redirect if not logged in
     try {
       const stored = localStorage.getItem('pacman_username');
       if (!stored) {
@@ -18,9 +19,13 @@ export default function PacmanGamePage() {
         return;
       }
       setUsername(stored);
+
+      // Fetch high score
       fetch(`/api/scores?username=${encodeURIComponent(stored)}`)
-        .then(r => r.ok ? r.json() : null)
-        .then(u => { if (u && u.highScore) setHighScore(u.highScore); })
+        .then(r => (r.ok ? r.json() : null))
+        .then(u => {
+          if (u && u.highScore) setHighScore(u.highScore);
+        })
         .catch(() => {});
     } catch (e) {}
 
@@ -41,10 +46,7 @@ export default function PacmanGamePage() {
         await loadScript('/js/helvetiker_regular.typeface.js');
         await loadScript('/js/game.js');
 
-        // Start the game
-        if (window.startGame) {
-          window.startGame();
-        }
+        if (window.startGame) window.startGame();
       } catch (error) {
         console.error('Failed to load game scripts:', error);
       }
@@ -55,21 +57,39 @@ export default function PacmanGamePage() {
 
   return (
     <>
-      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 200, color: 'white', display: 'flex', gap: 12, alignItems: 'center' }}>
-        {username ? (
+      {/* Top HUD */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 200,
+          color: 'white',
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+        }}
+      >
+        {username && (
           <>
-            <div>Player: <strong>{username}</strong> (High: {highScore})</div>
+            <div>
+              Player: <strong>{username}</strong> (High: {highScore})
+            </div>
             <button onClick={() => router.push('/leaderboard')}>Leaderboard</button>
           </>
-        ) : null}
+        )}
       </div>
 
-      {/* Main game and UI structure */}
+      {/* Game UI */}
       <div id="game-container">
         <div id="lives"></div>
         <div id="score">Score: 0</div>
-        <button id="help-button">HELP</button>
+        <button id="help-button" onClick={() => setShowHelp(true)}>
+          HELP
+        </button>
       </div>
+
+      {/* Controls for mobile */}
       <div id="controls-container">
         <div id="wasd-controls">
           <button className="control-btn" id="btn-w">W</button>
@@ -78,12 +98,16 @@ export default function PacmanGamePage() {
           <button className="control-btn" id="btn-d">D</button>
         </div>
       </div>
-      <div id="help-dialog" className="dialog" style={{ display: 'none' }}>
-        <h2>CONTROLS</h2>
-        <p><strong>Desktop:</strong> Use WASD keys...</p>
-        <p><strong>Mobile:</strong> Tap the W/A/S/D buttons...</p>
-        <button id="close-help-button">Close</button>
-      </div>
+
+      {/* Help Dialog — visible only when showHelp === true */}
+      {showHelp && (
+        <div id="help-dialog" className="dialog">
+          <h2>CONTROLS</h2>
+          <p><strong>Desktop:</strong> Use WASD keys...</p>
+          <p><strong>Mobile:</strong> Tap the W/A/S/D buttons...</p>
+          <button onClick={() => setShowHelp(false)}>Close</button>
+        </div>
+      )}
     </>
   );
 }

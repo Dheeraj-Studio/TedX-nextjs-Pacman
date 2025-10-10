@@ -12,8 +12,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Pac-Man 3D",
-  description: "3D Pac-Man game built with Three.js and Next.js",
+  title: "TedX NITK 2025 Theme Reveal",
+  description: "3D Pac-Man game TedX NITK 2025 Theme Reveal",
   viewport: "width=device-width, initial-scale=1.0, user-scalable=no",
 };
 
