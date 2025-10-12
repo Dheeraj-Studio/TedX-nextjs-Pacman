@@ -1,0 +1,160 @@
+/* --- Main Container --- */
+.game-over-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+  color: white;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.content-wrapper {
+  max-width: 600px;
+  width: 100%;
+}
+
+/* --- Title --- */
+/* Elegant centered title */
+.title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.6rem;
+  text-align: center;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  position: relative;
+  animation: fadeInUp 1.5s ease forwards;
+  opacity: 0;
+}
+
+/* Smooth underline */
+.title::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg, #ff4b2b, #ff416c);
+  border-radius: 2px;
+  animation: expandLine 1.2s ease forwards 1s;
+  opacity: 0;
+}
+
+/* Subtle subtitle */
+.subtitle {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 400;
+  margin-top: 8px;
+  color: #cccccc;
+  letter-spacing: 0.5px;
+  animation: fadeIn 2s ease forwards 1s;
+  opacity: 0;
+}
+
+/* Fade and slide animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Underline expansion animation */
+@keyframes expandLine {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  100% {
+    width: 80px;
+    opacity: 1;
+  }
+}
+
+/* Subtle fade */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Buttons --- */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 12px 28px;
+  background: #ff4500;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.action-btn:hover {
+  background: #e03e00;
+  transform: translateY(-3px);
+}
+
+/* Responsive spacing */
+@media (max-width: 600px) {
+  .action-btn {
+    width: 100%;
+  }
+}
+
+
+/* NEW STYLES */
+.reveal-section {
+  /* This container ensures the button and the name appear in the same spot */
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.speaker-name {
+  /* Style for the revealed name */
+  background-color: #ff4500;
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 60px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.0rem;
+  font-weight: 520;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

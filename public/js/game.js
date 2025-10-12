@@ -806,12 +806,17 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
                     submitScore(score);
                     
                     // Reset score for next game after a delay
-                    setTimeout(function() {
-                        score = 0;
-                        document.getElementById("score").innerText = "Score: " + score;
-                    }, 3000);
+                    // setTimeout(function() {
+                    //     score = 0;
+                    //     document.getElementById("score").innerText = "Score: " + score;
+                    // }, 3000);
 
                     deathSound.play();
+                    localStorage.setItem('gameCompleted', 'true');
+                    setTimeout(function() {
+                        window.location.href = '/game-over';
+                    }, 2000); // 2-second delay before redirecting
+
                 }
             }
         }
