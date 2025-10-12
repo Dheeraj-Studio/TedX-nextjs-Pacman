@@ -804,7 +804,7 @@ var killSound = createAudio('/sounds/pacman_eatghost.mp3');
 
                     // Submit current score to database
                     submitScore(score);
-                    
+                    localStorage.setItem('finalScore', score);
                     // Reset score for next game after a delay
                     // setTimeout(function() {
                     //     score = 0;

@@ -7,85 +7,101 @@ import './game-over.css';
 import ScribbleReveal from '@/components/ScribbleReveal';
 import { TippingButton } from '@/components/TippingButton';
 
-// --- CHANGE 1: Store speaker data (image and name) ---
 const allSpeakers = [
   { name: 'Rekha Raju', image: '/assets/speaker_1.jpg' },
   { name: 'Mohan Savarkar', image: '/assets/speaker_2.jpg' },
   { name: 'Vivek Agarwal', image: '/assets/speaker_3.jpg' },
-  { name: 'Sudipto Das', image: '/assets//speaker_4.jpg' },
+  { name: 'Sudipto Das', image: '/assets/speaker_4.jpg' },
   { name: 'Sankho Kun', image: '/assets/speaker_5.jpg' },
   { name: 'Prof. B. Ravi', image: '/assets/speaker_6.jpg' },
-  // Add the real names for each speaker here
 ];
 
 export default function GameOverPage() {
   const router = useRouter();
   
-  // --- CHANGE 2: Update state to hold the entire speaker object ---
+  const [isHighScorer, setIsHighScorer] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // State for the original (single speaker) layout
   const [currentSpeaker, setCurrentSpeaker] = useState(null);
   const [isNameRevealed, setIsNameRevealed] = useState(false);
-  useEffect(() => {
-  // 🚨 Prevent direct access to game-over
-  const isGameOver = localStorage.getItem('gameCompleted');
-  if (!isGameOver) {
-    router.replace('/'); // Redirect home if accessed directly
-    return;
-  }
-
-  let viewedImages = JSON.parse(localStorage.getItem('viewedImages')) || [];
-
-  let availableSpeakers = allSpeakers.filter(speaker => !viewedImages.includes(speaker.image));
-
-  if (availableSpeakers.length === 0) {
-    availableSpeakers = allSpeakers;
-    viewedImages = [];
-  }
-
-  const randomIndex = Math.floor(Math.random() * availableSpeakers.length);
-  const selectedSpeaker = availableSpeakers[randomIndex];
-  
-  setCurrentSpeaker(selectedSpeaker);
-
-  viewedImages.push(selectedSpeaker.image);
-  localStorage.setItem('viewedImages', JSON.stringify(viewedImages));
-}, [router]);
 
   useEffect(() => {
-    // Use the image path as the unique identifier in localStorage
-    let viewedImages = JSON.parse(localStorage.getItem('viewedImages')) || [];
+    const isGameOver = localStorage.getItem('gameCompleted');
+    const finalScore = parseInt(localStorage.getItem('finalScore') || '0', 10);
 
-    let availableSpeakers = allSpeakers.filter(speaker => !viewedImages.includes(speaker.image));
-    
-    if (availableSpeakers.length === 0) {
-      // If all have been seen, reset the list
-      availableSpeakers = allSpeakers;
-      viewedImages = [];
+    if (!isGameOver) {
+      router.replace('/');
+      return;
     }
 
-    const randomIndex = Math.floor(Math.random() * availableSpeakers.length);
-    const selectedSpeaker = availableSpeakers[randomIndex];
-    
-    // Set the entire speaker object in state
-    setCurrentSpeaker(selectedSpeaker);
-
-    // Add the viewed image path to localStorage
-    viewedImages.push(selectedSpeaker.image);
-    localStorage.setItem('viewedImages', JSON.stringify(viewedImages));
-  }, []);
-
-  // --- CHANGE 3: Create the handler for the button's onTip event ---
-    const handleReveal = () => {
-    console.log(`Revealing name: ${currentSpeaker?.name}`);
-    setIsNameRevealed(true);
     localStorage.removeItem('gameCompleted');
-    };
+    localStorage.removeItem('finalScore');
 
+    if (finalScore > 1000) {
+      setIsHighScorer(true);
+    } else {
+      setIsHighScorer(false);
+      let viewedImages = JSON.parse(localStorage.getItem('viewedImages')) || [];
+      let availableSpeakers = allSpeakers.filter(speaker => !viewedImages.includes(speaker.image));
 
-  // Render a loading state or null while the speaker is being selected
-  if (!currentSpeaker) {
-    return <div>Loading... Experience</div>;
+      if (availableSpeakers.length === 0) {
+        availableSpeakers = allSpeakers;
+        viewedImages = [];
+      }
+
+      const randomIndex = Math.floor(Math.random() * availableSpeakers.length);
+      const selectedSpeaker = availableSpeakers[randomIndex];
+      
+      setCurrentSpeaker(selectedSpeaker);
+
+      viewedImages.push(selectedSpeaker.image);
+      localStorage.setItem('viewedImages', JSON.stringify(viewedImages));
+    }
+
+    setIsLoading(false);
+  }, [router]);
+
+  const handleSingleReveal = () => setIsNameRevealed(true);
+
+  if (isLoading) {
+    return <div>Loading Experience...</div>;
   }
 
+  // --- HIGH SCORE PAGE RENDER ---
+  if (isHighScorer) {
+    return (
+      <div className="game-over-container">
+        <div className="content-wrapper">
+          <h1 className="title">
+            High Score!
+            <span className="subtitle">You've unlocked all speakers.</span>
+          </h1>
+
+          {/* The grid now contains cards with both image and text */}
+          <div className="speakers-grid">
+            {allSpeakers.map((speaker) => (
+              <div key={speaker.name} className="speaker-card">
+                <div className="speaker-image-container">
+                  <ScribbleReveal imageUrl={speaker.image} />
+                </div>
+                <div className="speaker-info">
+                  <p className="speaker-name-grid">{speaker.name}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="button-group">
+            <button className="action-btn" onClick={() => router.push('/')}>Retry</button>
+            <button className="action-btn" onClick={() => router.push('/leaderboard')}>Leaderboard</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- ORIGINAL SINGLE SPEAKER PAGE RENDER ---
   return (
     <div className="game-over-container">
       <div className="content-wrapper">
@@ -94,29 +110,19 @@ export default function GameOverPage() {
           <span className="subtitle">Guess the Personality?</span>
         </h1>
 
-        {/* The ScribbleReveal component now gets the image URL from the state object */}
-        <ScribbleReveal imageUrl={currentSpeaker.image} />
+        {currentSpeaker && <ScribbleReveal imageUrl={currentSpeaker.image} />}
 
         <div className="button-group">
-          <button className="action-btn" onClick={() => router.push('/')}>
-            Retry
-          </button>
-          <button className="action-btn" onClick={() => router.push('/leaderboard')}>
-            Leaderboard
-          </button>
+          <button className="action-btn" onClick={() => router.push('/')}>Retry</button>
+          <button className="action-btn" onClick={() => router.push('/leaderboard')}>Leaderboard</button>
         </div>
       </div>
 
-      {/* --- CHANGE 4: Conditional rendering for the reveal button/name --- */}
       <div className="reveal-section">
         {!isNameRevealed ? (
-          <TippingButton onTip={handleReveal}>
-            Reveal Name
-          </TippingButton>
+          <TippingButton onTip={handleSingleReveal}>Reveal Name</TippingButton>
         ) : (
-          <div className="speaker-name">
-            {currentSpeaker.name}
-          </div>
+          <div className="speaker-name">{currentSpeaker?.name}</div>
         )}
       </div>
     </div>

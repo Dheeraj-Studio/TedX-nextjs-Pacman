@@ -158,3 +158,53 @@
     transform: scale(1);
   }
 }
+
+/* --- NEW STYLES FOR HIGH-SCORE CARDS --- */
+
+/* This replaces the old .speakers-grid style */
+.speakers-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px; /* Wider grid for more speakers */
+  margin: 3rem auto;
+}
+
+/* This replaces the old .speaker-card style */
+.speaker-card {
+  background-color: #1c1c1c; /* Dark card background */
+  border-radius: 16px;
+  overflow: hidden; /* Ensures image corners are rounded */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 300px; /* A good size for each card */
+}
+
+.speaker-card:hover {
+  transform: translateY(-10px); /* Lifts the card on hover */
+  box-shadow: 0 15px 30px rgba(255, 69, 0, 0.3); /* Adds a colored glow */
+}
+
+/* --- 1. DISTINCT STYLING FOR THE IMAGE --- */
+.speaker-image-container {
+  width: 100%; /* Fixed height for all images */
+  background-color: #111;
+}
+
+/* --- 2. DISTINCT STYLING FOR THE TEXT --- */
+.speaker-info {
+  padding: 1.25rem;
+  text-align: center;
+  background-color: #252525; /* Slightly different background for text area */
+  border-top: 1px solid #444; /* Separator line */
+}
+
+.speaker-name-grid {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+}
